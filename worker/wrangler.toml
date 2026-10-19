@@ -1,0 +1,21 @@
+name = "laptop-guardian"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Day boundary for the daily report and rollover. Set this to your local zone.
+TZ = "Asia/Tehran"
+
+[triggers]
+# 20:25 UTC = 23:55 in Tehran. Wrangler cron schedules are always UTC, so this
+# must be shifted by hand if TZ changes.
+crons = ["25 20 * * *"]
+
+[[kv_namespaces]]
+binding = "PLANT_KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+# Secrets, set with `npx wrangler secret put <NAME>`:
+#   BOT_TOKEN      - Telegram bot token from @BotFather
+#   AUTH_TOKEN     - shared token the client sends on /ping
+#   WEBHOOK_SECRET - optional; also pass as secret_token to setWebhook

@@ -1,0 +1,15 @@
+# dependencies and build output
+node_modules/
+dist/
+.wrangler/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+
+# local config, secrets and logs
+.env
+.env.*
+*.local
+bot.log
