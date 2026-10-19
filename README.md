@@ -11,7 +11,7 @@
 
 # Sprig
 
-**Grow a plant by staying off your laptop.**
+**Grow a plant by staying off your computer.**
 
 Stay inside your daily screen-time budget and it levels up.
 Walk away and it heals. Go over the limit and it dies.
@@ -29,13 +29,13 @@ Walk away and it heals. Go over the limit and it dies.
 A plant that lives in your Telegram chat and measures how much you use your
 computer. Not a timer you can ignore: it spends something.
 
-- **The rule.** A daily budget of laptop minutes, 30 by default. Stay under it
+- **The rule.** A daily budget of screen time, 30 minutes by default. Stay under it
   and the plant is healthy. Go over it and health drains to zero.
 - **Getting away heals it.** Five idle minutes and a ping counts as away, which
   restores a little health instead of taking it.
 - **Streaks grow it.** Three healthy days in a row advances the plant a stage,
   from `seed` all the way to `LEGENDARY`.
-- **Nothing to install.** A stdlib-only Python script on the laptop, a Worker in
+- **Nothing to install.** A stdlib-only Python script on your computer, a Worker in
   the cloud, Telegram as the UI. No account, no app, no pip.
 
 ```
@@ -46,7 +46,7 @@ computer. Not a timer you can ignore: it spends something.
 ## How it works
 
 ```
-        laptop                          cloud                    phone
+        machine                         cloud                    phone
   ┌───────────────────┐         ┌──────────────────────┐
   │  client/sprig.py  │         │  Cloudflare Worker   │
   │                   │  ping   │                      │

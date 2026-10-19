@@ -9,20 +9,20 @@ const HELP = `~ Sprig ~
 Commands:
   /start         - Plant your first plant
   /status        - Health, stage and today's usage
-  /limit <min>   - Daily laptop budget (${LIMIT_MIN}-${LIMIT_MAX}, currently ${DEFAULT_LIMIT_MIN})
+  /limit <min>   - Daily screen-time budget (${LIMIT_MIN}-${LIMIT_MAX}, currently ${DEFAULT_LIMIT_MIN})
   /pause         - Stop counting (travel, day off)
   /resume        - Resume counting
   /reset         - Replace the plant with a fresh seed
   /help          - Show this message
 
-Run client/sprig.py on your laptop to start tracking.
+Run client/sprig.py on your computer to start tracking.
 
 Stay inside the budget and the plant grows. Stay away and it heals.
 Go over the limit and it dies.`;
 
 const EVENTS = {
   grew: (e) => `Your plant grew to Lv.${e.level}! (${getStage(e.level)}) (b^_^)b`,
-  warn: (e) => `(o_o) Health down to ${e.health}%. Close the laptop soon.`,
+  warn: (e) => `(o_o) Health down to ${e.health}%. Step away soon.`,
   died: () => "(;.;) Your plant died!\nToo much screen time today.\nTry again tomorrow!",
 };
 
@@ -46,7 +46,7 @@ export async function handleStart(chatId, env) {
   await sendMsg(env, chatId,
     "~ Welcome to Sprig ~\n\n" +
     "Your plant has been planted! (o^o)/\n\n" +
-    "Run client/sprig.py on your laptop.\n" +
+    "Run client/sprig.py on your computer.\n" +
     `Budget: ${DEFAULT_LIMIT_MIN} min/day. Check with /status.`);
 }
 

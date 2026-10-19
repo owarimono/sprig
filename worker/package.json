@@ -1,9 +1,9 @@
 {
   "name": "sprig",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "type": "module",
-  "description": "Grow a plant by staying off your laptop. Telegram bot, Cloudflare Worker, no dependencies.",
+  "description": "Grow a plant by staying off your computer. Telegram bot, Cloudflare Worker, no dependencies.",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",

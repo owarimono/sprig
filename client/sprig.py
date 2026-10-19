@@ -106,7 +106,7 @@ def ping(url, token, chat_id, status, idle):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Report laptop usage to Sprig.")
+    ap = argparse.ArgumentParser(description="Report computer usage to Sprig.")
     ap.add_argument("--once", action="store_true", help="send a single ping and exit")
     ap.add_argument("--dry-run", action="store_true", help="print status, send nothing")
     args = ap.parse_args()
