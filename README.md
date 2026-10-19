@@ -88,20 +88,21 @@ curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" \
 **3. Send `/start` to your bot**, then use that chat's id as `CHAT_ID` below.
 `@userinfobot` prints it too.
 
-**4. Run the client**
+**4. Install the client on the machine you want to track**
 
 ```sh
 cd ../client
-export WORKER_URL=https://<worker>.workers.dev
-export AUTH_TOKEN=<the same string>
-export CHAT_ID=<your chat id>
-
-python3 sprig.py --dry-run   # which idle backend does this machine have?
-python3 sprig.py             # start reporting
+python3 sprig.py install \
+  --worker-url https://<worker>.workers.dev \
+  --token <the same AUTH_TOKEN> \
+  --chat-id <your chat id>
 ```
 
-`--dry-run` checks detection and sends nothing. `--once` sends a single ping and
-exits, which is all you need from a systemd timer or cron job.
+That writes `~/.config/sprig/env` (mode 600), installs a `sprig.service` systemd
+user unit, links `sprig` into `~/.local/bin`, starts it, and finishes by pinging
+the Worker once — so a wrong URL or token is reported immediately instead of at
+midnight. From then on it starts with your session and restarts itself if it
+dies. Nothing to remember, nothing to launch.
 
 ## Commands
 
@@ -117,6 +118,34 @@ exits, which is all you need from a systemd timer or cron job.
 
 The bot also speaks up on its own: at 25% health, on level up, on death, and
 once a day with the full report.
+
+## The `sprig` command
+
+Installing drops a `sprig` command into `~/.local/bin`. It reads
+`~/.config/sprig/env`, which the environment can still override.
+
+| Command | Effect |
+| --- | --- |
+| `sprig` | Run in the foreground and show a live status line. |
+| `sprig install [--worker-url U] [--token T] [--chat-id ID] [--idle-threshold S]` | Write the config and unit, link the command, start the service. `--dry-run` prints everything and touches nothing. |
+| `sprig status` | Service status. |
+| `sprig logs [-f]` | Last 40 journal lines, `-f` to follow. |
+| `sprig uninstall` | Stop and remove the service and the command. Keeps the config. |
+| `sprig run --once` | One ping, then exit. |
+| `sprig run --dry-run` | Report which idle backend works, send nothing. |
+
+Running in the foreground rewrites one line in place:
+
+```
+~ Sprig ~
+away after 300s idle, ping every 60s. Ctrl+C to stop.
+
+  21:08:11  active  (o_o)  logind idle=0s  [██████████████░░]  90%  today 3/30 min
+```
+
+Under systemd there is no TTY, so the client logs a line only when something
+changes instead of writing 1440 identical lines a day into the journal. The
+health bar and the minute count come back from the Worker on every ping.
 
 ## Idle detection
 
@@ -161,15 +190,22 @@ cd worker
 npm test                                       # node --test, no dependencies
 npx wrangler deploy --dry-run --outdir dist    # bundle without deploying
 npx wrangler dev --test-scheduled              # local Worker, fire the cron by hand
+
+cd ..
+python3 client/test_sprig.py                   # client checks, no dependencies
+python3 client/sprig.py run --dry-run          # which idle backend works here?
 ```
 
-The suite covers day rollover, the limit and death rules, the pause freeze,
-warning deduplication, old KV records and the timezone helper.
+The Worker suite covers day rollover, the limit and death rules, the pause
+freeze, warning deduplication, old KV records and the timezone helper. The
+client checks cover config parsing and precedence, the generated unit file and
+status-line rendering.
 
 ## Layout
 
 ```
-client/sprig.py           idle detector and reporter, standard library only
+client/sprig.py           idle detector, reporter and the `sprig` command itself
+client/test_sprig.py      checks for config parsing, the unit file and rendering
 worker/src/index.js       routes: /webhook, /ping, scheduled report
 worker/src/handlers.js    Telegram commands, KV reads and writes
 worker/src/plant.js       plant rules and message rendering, pure functions

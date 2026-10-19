@@ -112,7 +112,17 @@ export async function handlePing(data, env) {
 
   await save(env, data.chat_id, state);
   for (const e of events) await sendMsg(env, data.chat_id, EVENTS[e.type](e));
-  return new Response("OK");
+
+  // The client renders a live status line from this.
+  return Response.json({
+    health: state.health,
+    level: state.level,
+    stage: getStage(state.level),
+    active_minutes_today: state.active_minutes_today,
+    limit_min: state.limit_min,
+    plant_alive: state.plant_alive,
+    paused: state.paused,
+  });
 }
 
 // Reports only. The day is settled by the next ping, which is the single owner
