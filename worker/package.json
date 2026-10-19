@@ -1,9 +1,9 @@
 {
-  "name": "laptop-guardian",
+  "name": "sprig",
   "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "Telegram bot that grows a plant while you stay off your laptop and kills it when you overuse it.",
+  "description": "Grow a plant by staying off your laptop. Telegram bot, Cloudflare Worker, no dependencies.",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",

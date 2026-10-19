@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Laptop Guardian - client.
+Sprig - client.
 
-Reports how long this machine has been in use to the guardian Worker, which
+Reports how long this machine has been in use to the Sprig Worker, which
 grows or kills a plant in your Telegram chat. Standard library only.
 """
 import argparse
@@ -106,7 +106,7 @@ def ping(url, token, chat_id, status, idle):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Report laptop usage to Laptop Guardian.")
+    ap = argparse.ArgumentParser(description="Report laptop usage to Sprig.")
     ap.add_argument("--once", action="store_true", help="send a single ping and exit")
     ap.add_argument("--dry-run", action="store_true", help="print status, send nothing")
     args = ap.parse_args()
@@ -117,7 +117,7 @@ def main():
 
     if args.dry_run:
         idle, backend = detect_idle()
-        print("~ Laptop Guardian (dry run) ~")
+        print("~ Sprig (dry run) ~")
         print(f"idle backend: {backend or 'none'}")
         print(f"idle: {idle}s  => {'idle' if idle and idle >= IDLE_THRESHOLD else 'active'}"
               if idle is not None else "idle: unknown, nothing would be reported")
@@ -126,7 +126,7 @@ def main():
     if not all([url, token, chat_id]):
         sys.exit("Set WORKER_URL, AUTH_TOKEN and CHAT_ID environment variables.")
 
-    print("~ Laptop Guardian ~")
+    print("~ Sprig ~")
     print(f"away after {IDLE_THRESHOLD}s idle, ping every {PING_INTERVAL}s")
     print("Ctrl+C to stop\n")
 

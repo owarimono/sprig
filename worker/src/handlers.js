@@ -4,7 +4,7 @@ import {
 } from "./plant.js";
 import { sendMsg } from "./telegram.js";
 
-const HELP = `~ Laptop Guardian ~
+const HELP = `~ Sprig ~
 
 Commands:
   /start         - Plant your first plant
@@ -15,7 +15,7 @@ Commands:
   /reset         - Replace the plant with a fresh seed
   /help          - Show this message
 
-Run client/guardian.py on your laptop to start tracking.
+Run client/sprig.py on your laptop to start tracking.
 
 Stay inside the budget and the plant grows. Stay away and it heals.
 Go over the limit and it dies.`;
@@ -44,9 +44,9 @@ export async function handleStart(chatId, env) {
   }
   await save(env, chatId, newState(chatId, DEFAULT_LIMIT_MIN, today(env)));
   await sendMsg(env, chatId,
-    "~ Welcome to Laptop Guardian ~\n\n" +
+    "~ Welcome to Sprig ~\n\n" +
     "Your plant has been planted! (o^o)/\n\n" +
-    "Run client/guardian.py on your laptop.\n" +
+    "Run client/sprig.py on your laptop.\n" +
     `Budget: ${DEFAULT_LIMIT_MIN} min/day. Check with /status.`);
 }
 

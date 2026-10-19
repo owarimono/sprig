@@ -54,7 +54,7 @@ export default {
       return handlePing(data, env);
     }
 
-    return new Response("Laptop Guardian");
+    return new Response("Sprig");
   },
 
   async scheduled(event, env) {
