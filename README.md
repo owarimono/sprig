@@ -1,17 +1,11 @@
 <div align="center">
 
 ```
-                 ,@@@@@@@,
-                   ,,,.   ,@@@@@@/@@,  .oo8888o.
-               ,&%%&%&&%,@@@@@/@@@@@@,8888\88/8o
-               ,%&\%&&%&&%,@@@\@@@/@@@88\88888/88'
-                           %&&%&%&/%&&%@@\@@/ /@@@88888\88888'             -Stay Focused
-                 %&&%/ %&%%&&@@\ V /@@' `88\8 `/88'
-                  `&%\ ` /%&'    |.|        \ '|8'
-                    |o|        | |         | |
-                    |.|        | |         | |
-             jgs \\/ ._\//_/__/  ,\_//__\\/.  \_//__/_
-
+      ✦ · ✦
+    ╱  ╲│╱  ╲
+   ·────│────·
+        │
+       ═╧═
 ```
 
 # Sprig
@@ -74,45 +68,215 @@ computer. Not a timer you can ignore: it spends something.
 testable. `handlers.js` does I/O and messages, `index.js` does routing. The
 Worker is the only thing that decides what a plant looks like.
 
-## Quick start
+## Setup
 
-**1. Plant the cloud half**
+Two halves: one small program in the cloud (Cloudflare, free) and one on the
+computer you want to track. Follow the steps in order. Each one ends with a
+**you should see** line — if you do not see it, stop there and read
+[If something went wrong](#if-something-went-wrong).
+
+No coding involved. It is copy-paste, four accounts-free clicks, and about
+fifteen minutes.
+
+**You need:** a Telegram account, a free Cloudflare account, and a Linux
+computer. The tracking half talks to `systemd`, so it is Linux-only; the cloud
+half runs from any OS.
+
+### 1. Make the bot
+
+In Telegram, search for **@BotFather** and press Start. Send `/newbot`. It asks
+for a display name (anything) and a username, which must end in `bot` — for
+example `my_sprig_bot`.
+
+It replies with a token that looks like `7123456789:AAH8k...`.
+
+> **Keep it secret.** That token is the bot's password — anyone who has it
+> controls your bot. Leave this chat open, you need the token in steps 7 and 9.
+
+### 2. Get the code
+
+Open <https://github.com/owarimono/sprig>, click the green **Code** button, then
+**Download ZIP**. Unzip it — you get a folder named `sprig-main`.
+
+**You should see:** `sprig-main` containing `README.md`, `client/`, `worker/`.
+
+### 3. Open a terminal
+
+On Linux press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd>. A black window with
+a blinking cursor appears. Everything below is typed there, one line at a time,
+then <kbd>Enter</kbd>.
+
+To paste, use <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>V</kbd> (`Ctrl+V` does not
+work in a terminal).
+
+Point the terminal at the folder from step 2 — type `cd ` (with the space), then
+drag the unzipped folder from your file manager onto the terminal window, then
+press <kbd>Enter</kbd>:
 
 ```sh
-git clone https://github.com/owarimono/sprig && cd sprig/worker
-npx wrangler kv:namespace create PLANT_KV   # paste the id into wrangler.toml
-npx wrangler secret put BOT_TOKEN           # from @BotFather
-npx wrangler secret put AUTH_TOKEN          # any strong random string
-npx wrangler secret put WEBHOOK_SECRET      # another one
+cd /home/you/Downloads/sprig-main
+ls
+```
+
+**You should see:** `README.md  client  worker`.
+
+### 4. Install Node.js
+
+The cloud half is built with it. Check first:
+
+```sh
+node -v
+```
+
+**You should see:** something like `v20.11.0`. Anything 18 or newer is fine.
+
+If it says *command not found*, install it and try again:
+
+```sh
+sudo pacman -S nodejs npm      # Arch
+sudo apt install nodejs npm    # Debian, Ubuntu
+sudo dnf install nodejs        # Fedora
+```
+
+### 5. Log in to Cloudflare
+
+Create a free account at <https://dash.cloudflare.com/sign-up> first. Then:
+
+```sh
+cd worker
+npx wrangler login
+```
+
+The first run asks *Need to install the following packages… Ok to proceed?* —
+type `y` and press <kbd>Enter</kbd>. A browser window opens; click **Allow**.
+
+```sh
+npx wrangler whoami
+```
+
+**You should see:** your Cloudflare email address.
+
+### 6. Create the storage
+
+The Worker keeps every plant in a key-value store named `PLANT_KV`.
+
+```sh
+npx wrangler kv namespace create PLANT_KV
+```
+
+**You should see:** a line like `id = "0f2a9c1b4d..."`. Copy that id.
+
+Now open `worker/wrangler.toml` in any text editor (double-clicking it opens one
+on most desktops), find the line `id = "YOUR_KV_NAMESPACE_ID"`, and replace only
+the part inside the quotes with the id you copied. Save the file. The line
+should end up looking like `id = "0f2a9c1b4d..."`.
+
+### 7. Store the three secrets
+
+Each command asks for a value and hides it while you paste — no characters
+appear. That is normal. Press <kbd>Enter</kbd> after pasting.
+
+```sh
+npx wrangler secret put BOT_TOKEN
+```
+
+Paste the token from step 1.
+
+```sh
+python3 -c "import secrets; print(secrets.token_hex(24))"   # prints a random string
+npx wrangler secret put AUTH_TOKEN
+```
+
+Paste the random string it printed. **Write this one down** — the client on your
+computer needs it in step 11.
+
+```sh
+python3 -c "import secrets; print(secrets.token_hex(24))"
+npx wrangler secret put WEBHOOK_SECRET
+```
+
+Paste the second random string. Write it down too, step 9 needs it.
+
+**You should see:** `Success! Uploaded secret BOT_TOKEN`, once per secret.
+
+### 8. Deploy
+
+```sh
 npx wrangler deploy
 ```
 
-**2. Point Telegram at it**
+**You should see:** a line like
+`https://sprig.your-name.workers.dev`. That is your Worker's address. Copy it —
+steps 9 and 11 need it, without a trailing slash.
+
+### 9. Connect Telegram to the Worker
+
+Telegram has to be told where to deliver your messages. Replace the three
+placeholders — including the `<` and `>` — and run it as one line:
 
 ```sh
 curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" \
-  -d "url=https://<worker>.workers.dev/webhook" \
+  -d "url=<WORKER_URL>/webhook" \
   -d "secret_token=<WEBHOOK_SECRET>"
 ```
 
-**3. Send `/start` to your bot**, then use that chat's id as `CHAT_ID` below.
-`@userinfobot` prints it too.
+**You should see:** `{"ok":true,"result":true,"description":"Webhook was set"}`.
 
-**4. Install the client on the machine you want to track**
+### 10. Get your chat id
+
+Open your bot in Telegram (BotFather gives you the link) and send `/start`.
+
+**You should see:** a welcome message and `Your plant has been planted!`
+
+Now message **@userinfobot** — it replies with a line like `Id: 123456789`. That
+number is your chat id. For a group chat instead, add @userinfobot to the group
+and it prints the group id, which starts with `-`.
+
+### 11. Install the tracker
+
+This is the half that lives on your computer. It starts itself at login and
+needs nothing after this step.
 
 ```sh
 cd ../client
 python3 sprig.py install \
-  --worker-url https://<worker>.workers.dev \
-  --token <the same AUTH_TOKEN> \
-  --chat-id <your chat id>
+  --worker-url https://sprig.your-name.workers.dev \
+  --token <AUTH_TOKEN> \
+  --chat-id <CHAT_ID>
 ```
 
-That writes `~/.config/sprig/env` (mode 600), installs a `sprig.service` systemd
-user unit, links `sprig` into `~/.local/bin`, starts it, and finishes by pinging
-the Worker once — so a wrong URL or token is reported immediately instead of at
-midnight. From then on it starts with your session and restarts itself if it
-dies. Nothing to remember, nothing to launch.
+**You should see:** `sprig.service` reported as `enabled and running`, then one
+status line with a health bar. That line is a real ping — the Worker already
+answered.
+
+```sh
+sprig status
+sprig logs
+```
+
+`status` says `active (running)`; `logs` shows one line per change instead of
+spam.
+
+### 12. Check it
+
+Send `/status` to your bot. It answers with the plant, the health bar, today's
+minutes and the streak. Leave the computer for ten minutes and watch the bar go
+up.
+
+## If something went wrong
+
+| What you see | What it means |
+| --- | --- |
+| `401` or `Worker rejected AUTH_TOKEN` | The token in the install command is not the one stored in step 7. Run step 11 again with the correct `AUTH_TOKEN`. |
+| `{"ok":false,...}` from step 9 | The bot token is wrong, or the URL does not end in `/webhook`. |
+| Bot never answers `/start` | The webhook is not set. Run `curl "https://api.telegram.org/bot<BOT_TOKEN>/getWebhookInfo"` — `url` must be your Worker address plus `/webhook`. |
+| `npx: command not found` | Node.js is missing or too old — step 4. |
+| `no idle backend available` | The client cannot read idle time. It needs a real systemd login session; a bare SSH shell or a container has none. |
+| `IDLE_THRESHOLD must be a positive integer` | A typo in `~/.config/sprig/env`. Fix the number, then `sprig restart`-style reload: `systemctl --user restart sprig`. |
+| The service restarts in a loop | `sprig logs` now prints the reason instead of dying silently. |
+
+Never paste a token into an issue, a screenshot or a chat. If one leaked, send
+`/revoke` to @BotFather to replace the bot token and repeat steps 7 and 9.
 
 ## Commands
 
