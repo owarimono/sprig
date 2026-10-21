@@ -12,5 +12,5 @@
   "devDependencies": {
     "wrangler": "^3.114.17"
   },
-  "license": "ISC"
+  "license": "MIT"
 }

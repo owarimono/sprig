@@ -14,7 +14,7 @@ Walk away and it heals. Go over the limit and it dies.
   <img alt="Client: Python 3.8+ stdlib" src="https://img.shields.io/badge/Client-Python_3.8+_stdlib-10B981?style=for-the-badge&labelColor=022C22&logo=python&logoColor=white">
   <img alt="Store: Workers KV" src="https://img.shields.io/badge/Store-Workers_KV-059669?style=for-the-badge&labelColor=022C22">
   <img alt="Ping: once a minute" src="https://img.shields.io/badge/Ping-1_min-047857?style=for-the-badge&labelColor=022C22">
-  <img alt="License: ISC" src="https://img.shields.io/badge/License-ISC-6EE7B7?style=for-the-badge&labelColor=022C22">
+  <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-6EE7B7?style=for-the-badge&labelColor=022C22">
   <img alt="Release: v1.2.1" src="https://img.shields.io/badge/Release-v1.2.1-A7F3D0?style=for-the-badge&labelColor=022C22">
 </p>
 
@@ -401,5 +401,5 @@ worker/test/handlers.test.js commands, KV paging, write skipping
 ---
 
 <div align="center">
-<sub>ISC licensed.</sub>
+<sub>MIT licensed.</sub>
 </div>
