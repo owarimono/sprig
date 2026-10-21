@@ -72,6 +72,26 @@ def test_bar_bounds():
     assert sprig.bar(-5) == "░" * 16 and sprig.bar(140) == "█" * 16
 
 
+def test_bad_number_setting_is_a_message_not_a_traceback():
+    # A hand-edited env file must never crash the service into a restart loop.
+    assert sprig._positive_int("90") == 90
+    for junk in ("abc", "", None, "0", "-5", "6.5"):
+        assert sprig._positive_int(junk) is None, junk
+
+    path = Path("/tmp/sprig-test-bad-env")
+    path.write_text('IDLE_THRESHOLD="abc"\nPING_INTERVAL="60"\n')
+    real_path = sprig.CONFIG_PATH
+    sprig.CONFIG_PATH = path
+    try:
+        class Args:
+            dry_run = False
+            once = True
+        assert sprig.cmd_run(Args()) == 1
+    finally:
+        sprig.CONFIG_PATH = real_path
+        path.unlink()
+
+
 if __name__ == "__main__":
     checks = [value for name, value in sorted(globals().items()) if name.startswith("test_")]
     for check in checks:

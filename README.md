@@ -115,7 +115,7 @@ dies. Nothing to remember, nothing to launch.
 | --- | --- |
 | `/start` | Plant your first plant. Never overwrites an existing one. |
 | `/status` | Health bar, stage, today's usage, streak. |
-| `/limit <min>` | Daily budget, 5-720 minutes. |
+| `/limit <min>` | Daily budget, 5-720 minutes. Lowering it below today's usage can kill the plant. |
 | `/pause` | Freeze the plant while you travel or take a day off. |
 | `/resume` | Resume counting. |
 | `/reset` | Fresh seed. Streak and stage reset. |
@@ -201,10 +201,11 @@ python3 client/test_sprig.py                   # client checks, no dependencies
 python3 client/sprig.py run --dry-run          # which idle backend works here?
 ```
 
-The Worker suite covers day rollover, the limit and death rules, the pause
-freeze, warning deduplication, old KV records and the timezone helper. The
-client checks cover config parsing and precedence, the generated unit file and
-status-line rendering.
+The Worker suite covers day rollover, the limit and death rules, the pause freeze,
+warning deduplication, old KV records, the timezone helper, gap days, KV page
+walking and the no-op write skip. The client checks cover config parsing and
+precedence, rejected numeric settings, the generated unit file and status-line
+rendering.
 
 ## Layout
 
@@ -215,17 +216,24 @@ worker/src/index.js       routes: /webhook, /ping, scheduled report
 worker/src/handlers.js    Telegram commands, KV reads and writes
 worker/src/plant.js       plant rules and message rendering, pure functions
 worker/src/telegram.js    sendMessage wrapper
-worker/test/plant.test.js node --test
+worker/test/plant.test.js rules: rollover, health, death, gaps
+worker/test/handlers.test.js commands, KV paging, write skipping
 ```
 
 ## Notes
 
 - One active ping equals one minute of usage. The client keeps a fixed cadence so
   the count stays honest even though pinging takes time.
-- State is one KV record per chat, written on every ping. Two clients on the same
-  chat could lose an update; there is one client per plant, so this is left alone.
+- State is one KV record per chat, and it is written only when the record really
+  changes: a paused ping, or an idle ping at full health, writes nothing. One ping
+  a minute is 1440 writes a day, and the free tier allows 1000.
+- Two clients on the same chat could lose an update; there is one client per
+  plant, so this is left alone.
 - Killing the client stops the counting, which is the safe direction: the plant
   heals instead of dying while you are away from the machine.
+- Days with no pings at all are not graded. Only the day immediately before today
+  is settled, so a weekend with the laptop off, or a long `/pause`, earns no
+  streak day instead of one free one.
 
 ---
 

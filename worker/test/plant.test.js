@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  applyPing, newState, normalize, calcHealth, todayStr, LIMIT_MIN,
+  applyPing, newState, normalize, calcHealth, todayStr, daysBetween, LIMIT_MIN,
 } from "../src/plant.js";
 
 const D1 = "2026-01-01";
@@ -82,6 +82,15 @@ test("records from older versions are filled in, not dropped", () => {
   assert.equal(s.level, 2);
   assert.equal(s.health, 80);
   assert.equal(s.consecutive_good_days, 0);
+});
+
+test("a gap of untracked days credits no good day", () => {
+  const s = { ...newState(1, 30, D1), health: 100 };
+  const { state } = applyPing(s, { status: "idle" }, "2026-01-06");
+  assert.equal(state.consecutive_good_days, 0);
+  assert.equal(state.total_plants_grown, 0);
+  assert.equal(daysBetween(D1, "2026-01-06"), 5);
+  assert.equal(daysBetween(D1, D2), 1);
 });
 
 test("todayStr renders a YYYY-MM-DD day in the requested timezone", () => {

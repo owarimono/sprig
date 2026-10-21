@@ -26,6 +26,14 @@ export const LIMIT_MAX = 720;
 const WARN_AT = 25;        // percent, one warning per day
 const LEVEL_UP_EVERY = 3;  // good days per stage
 
+const DAY_MS = 86400 * 1000;
+
+// Whole days between two YYYY-MM-DD strings. Dates sort as UTC, no timezone math.
+export function daysBetween(from, to) {
+  const gap = (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS;
+  return Number.isFinite(gap) ? Math.round(gap) : NaN;
+}
+
 export function bar(pct, w = 16) {
   const f = Math.max(0, Math.min(w, Math.round((pct / 100) * w)));
   return "█".repeat(f) + "░".repeat(w - f);
@@ -85,15 +93,18 @@ export function applyPing(state, ping, today = todayStr()) {
   }
 
   if (s.last_date !== today) {
-    // Settle the day that just ended, exactly once.
-    if (s.plant_alive && s.health >= 50) {
+    // Settle only the day immediately before today. After a pause or a gap of
+    // untracked days there is nothing honest to credit: one stale settle used to
+    // hand out a good day for a whole month of pause.
+    const ended = daysBetween(s.last_date, today) === 1;
+    if (ended && s.plant_alive && s.health >= 50) {
       s.consecutive_good_days += 1;
       s.total_plants_grown += 1;
       if (s.consecutive_good_days % LEVEL_UP_EVERY === 0 && s.level < STAGES.length - 1) {
         s.level += 1;
         events.push({ type: "grew", level: s.level });
       }
-    } else {
+    } else if (ended) {
       s.consecutive_good_days = 0;
     }
     s.active_minutes_today = 0;

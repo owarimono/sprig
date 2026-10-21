@@ -1,6 +1,6 @@
 {
   "name": "sprig",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "type": "module",
   "description": "Grow a plant by staying off your computer. Telegram bot, Cloudflare Worker, no dependencies.",

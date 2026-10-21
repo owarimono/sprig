@@ -223,10 +223,24 @@ def colour(text, status):
 
 # ------------------------------------------------------------------- commands
 
+def _positive_int(value):
+    """Env files are hand-edited: a typo must be a message, not a traceback."""
+    try:
+        number = int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+    return number if number > 0 else None
+
+
 def cmd_run(args):
     config = load_config()
-    threshold = int(config["IDLE_THRESHOLD"])
-    interval = int(config["PING_INTERVAL"])
+    threshold = _positive_int(config.get("IDLE_THRESHOLD"))
+    interval = _positive_int(config.get("PING_INTERVAL"))
+    if not threshold or not interval:
+        print("IDLE_THRESHOLD and PING_INTERVAL must be positive integers "
+              f"(got {config.get('IDLE_THRESHOLD')!r} and {config.get('PING_INTERVAL')!r}).",
+              file=sys.stderr)
+        return 1
 
     if args.dry_run:
         idle, backend = detect_idle(threshold)
@@ -261,7 +275,9 @@ def cmd_run(args):
         idle, backend = detect_idle(threshold)
         if idle is None:
             line = "  no idle backend available (need logind, xprintidle or xssstate)"
-            print(line, file=sys.stderr)
+            if tty or line != previous:
+                print(line, file=sys.stderr)
+            previous = line
         else:
             status = "idle" if idle >= threshold else "active"
             ok, detail, state = ping(url, token, chat_id, status, idle)
@@ -271,9 +287,6 @@ def cmd_run(args):
             line = render_line(time.strftime("%H:%M:%S"), backend, idle, status, state)
             if not ok:
                 line += f"  {detail}"
-            elif state:
-                # A colour change is also a signal, so key the dedup on it.
-                line += colour("", status)
 
             # Interactive: rewrite one line. Under systemd: log changes only, so
             # the journal does not collect 1440 identical lines a day.
@@ -287,7 +300,12 @@ def cmd_run(args):
             if tty:
                 print()
             return 0
-        time.sleep(max(0, next_tick - time.monotonic()))
+        now = time.monotonic()
+        if next_tick <= now:
+            # The ping overran its slot. Skip the missed window instead of
+            # sleeping 0s forever, which used to spin the loop at full speed.
+            next_tick = now + interval
+        time.sleep(max(0, next_tick - now))
 
 
 def cmd_install(args):
@@ -312,6 +330,10 @@ def cmd_install(args):
         print("CHAT_ID must be numeric. Ask @userinfobot, or use the id /start replies with.",
               file=sys.stderr)
         return 1
+    for key in DEFAULTS:
+        if not _positive_int(config.get(key)):
+            print(f"{key} must be a positive integer, got {config.get(key)!r}.", file=sys.stderr)
+            return 1
     if any(character in config["AUTH_TOKEN"] for character in '"\'\\\n\r'):
         print("AUTH_TOKEN must not contain quotes, backslashes or newlines.",
               file=sys.stderr)
@@ -373,15 +395,24 @@ def cmd_uninstall(_args):
     return 0
 
 
+def _run(command):
+    """Run a system tool with its output attached; a missing tool is a message."""
+    try:
+        return subprocess.run(command).returncode
+    except FileNotFoundError:
+        print(f"{command[0]} not found (not a systemd machine?)", file=sys.stderr)
+        return 1
+
+
 def cmd_status(_args):
-    return subprocess.run(["systemctl", "--user", "status", SERVICE, "--no-pager"]).returncode
+    return _run(["systemctl", "--user", "status", SERVICE, "--no-pager"])
 
 
 def cmd_logs(args):
     command = ["journalctl", "--user", "-u", SERVICE, "-n", "40", "--no-pager", "-o", "cat"]
     if args.follow:
         command.append("-f")
-    return subprocess.run(command).returncode
+    return _run(command)
 
 
 def main(argv=None):
