@@ -21,9 +21,14 @@
 Stay inside your daily screen-time budget and it levels up.
 Walk away and it heals. Go over the limit and it dies.
 
-![license](https://img.shields.io/badge/license-ISC-2ea44f)
-![python](https://img.shields.io/badge/python-3.8%2B-3776ab)
-![dependencies](https://img.shields.io/badge/dependencies-none-8a2be2)
+<p align="center">
+  <a href="https://workers.cloudflare.com/"><img alt="Platform: Cloudflare Workers" src="https://img.shields.io/badge/Platform-Cloudflare_Workers-34D399?style=for-the-badge&labelColor=022C22&logo=cloudflareworkers&logoColor=white"></a>
+  <img alt="Client: Python 3.8+ stdlib" src="https://img.shields.io/badge/Client-Python_3.8+_stdlib-10B981?style=for-the-badge&labelColor=022C22&logo=python&logoColor=white">
+  <img alt="Store: Workers KV" src="https://img.shields.io/badge/Store-Workers_KV-059669?style=for-the-badge&labelColor=022C22">
+  <img alt="Ping: once a minute" src="https://img.shields.io/badge/Ping-1_min-047857?style=for-the-badge&labelColor=022C22">
+  <img alt="License: ISC" src="https://img.shields.io/badge/License-ISC-6EE7B7?style=for-the-badge&labelColor=022C22">
+  <img alt="Release: v1.2.1" src="https://img.shields.io/badge/Release-v1.2.1-A7F3D0?style=for-the-badge&labelColor=022C22">
+</p>
 
 </div>
 
