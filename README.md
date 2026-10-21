@@ -1,12 +1,6 @@
 <div align="center">
 
-```
-      ✦ · ✦
-    ╱  ╲│╱  ╲
-   ·────│────·
-        │
-       ═╧═
-```
+<img src="assets/tree.svg" width="88" height="88" alt="Sprig">
 
 # Sprig
 
